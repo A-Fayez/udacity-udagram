@@ -1,0 +1,39 @@
+Description: EC2 instance as a bastion host for troubleshooting purposes
+
+Parameters:
+    KeyName:
+        Descrition: Jump box key name
+        Type: String
+
+    AvailabilityZone:
+        Description: AZ in which bastion host will launch
+        Type: String
+
+    Subnet:
+        Type: String
+
+Resources:
+    BastionHostSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            VpcId:
+                Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: 22
+                  ToPort: 22
+                  CidrIp: 0.0.0.0/0
+            SecurityGroupEgress:
+                - IpProtocol: tcp
+                  FromPort: 22
+                  ToPort: 22
+
+    BastionHost:
+        Type: AWS::EC2::Instance
+        Properties:
+            ImageId: ami-0a36eb8fadc976275
+            InstanceType: t2.micro
+            KeyName: !Ref KeyName
+            SubnetId: !Ref Subnet
+            SecurityGroupIds:
+                - !Ref BastionSecurityGroup
